@@ -16,7 +16,7 @@ public class Main {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
         server.createContext("/api/clients", new ClientsHandler());
         server.createContext("/api/products", new ProductsHandler());
-        server.createContext("/api/purchases", new PurchasesHandler());
+        server.createContext("/api/purchases", new PurchasesHandler()); //put and post not working
         server.setExecutor(null);
         server.start();
         System.out.println("Server started, server port is 8080");
