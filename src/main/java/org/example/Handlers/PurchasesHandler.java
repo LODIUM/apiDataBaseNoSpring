@@ -59,22 +59,6 @@ public class  PurchasesHandler implements HttpHandler {
             return getAllPurchases();
         }
     }
-
-    private String getPurchasesById(String query) {
-        int id = Integer.parseInt(getQueryParam(query, "id"));
-        Optional<Purchases> purchases = purchasesRepository.findById(id);
-        if (purchases.isPresent()) {
-            return gson.toJson(purchases.get());
-        } else {
-            return "Purchases not found";
-        }
-    }
-
-    private String getAllPurchases() {
-        List<Purchases> purchasesList = purchasesRepository.findAll();
-        return gson.toJson(purchasesList);
-    }
-
     private String handlePostRequest(HttpExchange exchange) throws IOException {
         Purchases purchases = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Purchases.class);
         purchasesRepository.save(purchases);
@@ -91,6 +75,21 @@ public class  PurchasesHandler implements HttpHandler {
         int id = Integer.parseInt(getQueryParam(exchange.getRequestURI().getQuery(), "id"));
         purchasesRepository.delete(id);
         return "Purchases deleted";
+    }
+
+    private String getPurchasesById(String query) {
+        int id = Integer.parseInt(getQueryParam(query, "id"));
+        Optional<Purchases> purchases = purchasesRepository.findById(id);
+        if (purchases.isPresent()) {
+            return gson.toJson(purchases.get());
+        } else {
+            return "Purchases not found";
+        }
+    }
+
+    private String getAllPurchases() {
+        List<Purchases> purchasesList = purchasesRepository.findAll();
+        return gson.toJson(purchasesList);
     }
 
     private String getQueryParam(String query, String param) {

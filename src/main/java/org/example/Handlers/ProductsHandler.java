@@ -61,21 +61,6 @@ public class ProductsHandler implements HttpHandler {
         }
     }
 
-    private String getProductById(String query) {
-        int id = Integer.parseInt(getQueryParam(query, "id"));
-        Optional<Products> products = productsRepository.findById(id);
-        if (products.isPresent()) {
-            return gson.toJson(products.get());
-        } else {
-            return "Product not found";
-        }
-    }
-
-    private String getAllProducts() {
-        List<Products> productsList = productsRepository.findAll();
-        return gson.toJson(productsList);
-    }
-
     private String handlePostRequest(HttpExchange exchange) throws IOException {
         Products products = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Products.class);
         productsRepository.save(products);
@@ -93,6 +78,21 @@ public class ProductsHandler implements HttpHandler {
         productsRepository.delete(id);
         return "Product deleted";
     }
+    private String getProductById(String query) {
+        int id = Integer.parseInt(getQueryParam(query, "id"));
+        Optional<Products> products = productsRepository.findById(id);
+        if (products.isPresent()) {
+            return gson.toJson(products.get());
+        } else {
+            return "Product not found";
+        }
+    }
+
+    private String getAllProducts() {
+        List<Products> productsList = productsRepository.findAll();
+        return gson.toJson(productsList);
+    }
+
 
     private String getQueryParam(String query, String param) {
         for (String pair : query.split("&")) {

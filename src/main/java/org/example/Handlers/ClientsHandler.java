@@ -69,18 +69,6 @@ public class ClientsHandler implements HttpHandler {
             return "Client not found";
         }
     }
-
-    private String getAllClients() {
-        List<Clients> clientsList = clientsRepository.findAll();
-        return gson.toJson(clientsList);
-    }
-
-    private String handlePostRequest(HttpExchange exchange) throws IOException {
-        Clients client = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Clients.class);
-        clientsRepository.save(client);
-        return "Client saved";
-    }
-
     private String handlePutRequest(HttpExchange exchange) throws IOException {
         Clients client = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Clients.class);
         clientsRepository.update(client);
@@ -91,6 +79,16 @@ public class ClientsHandler implements HttpHandler {
         int id = Integer.parseInt(getQueryParam(exchange.getRequestURI().getQuery(), "id"));
         clientsRepository.delete(id);
         return "Client deleted";
+    }
+    private String getAllClients() {
+        List<Clients> clientsList = clientsRepository.findAll();
+        return gson.toJson(clientsList);
+    }
+
+    private String handlePostRequest(HttpExchange exchange) throws IOException {
+        Clients client = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Clients.class);
+        clientsRepository.save(client);
+        return "Client saved";
     }
 
     private String getQueryParam(String query, String param) {
