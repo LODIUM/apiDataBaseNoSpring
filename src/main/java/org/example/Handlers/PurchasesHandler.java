@@ -3,9 +3,7 @@ package org.example.Handlers;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.example.entity.Clients;
 import org.example.entity.Purchases;
-import org.example.repository.ClientsRepository;
 import org.example.repository.PurchasesRepository;
 
 import java.io.IOException;
@@ -13,51 +11,37 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
 
-public class PurchasesHandler implements HttpHandler {
+public class  PurchasesHandler implements HttpHandler {
     private PurchasesRepository purchasesRepository = new PurchasesRepository();
     private Gson gson = new Gson();
 
-
+    @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         String response = "";
         int statusCode = 200;
 
         try {
-            if ("GET".equals(method)) {
-                String query = exchange.getRequestURI().getQuery();
-                if (query != null && query.contains("id=")) {
-                    int id = Integer.parseInt(getQueryParam(query, "id"));
-                    Optional<Purchases> purchases = purchasesRepository.findById(id);
-                    if (purchases.isPresent()) {
-                        response = gson.toJson(purchases.get());
-                    } else {
-                        statusCode = 404;
-                        response = "Purchases not found";
-                    }
-                }
-                else {
-                    List<Purchases> purchasesList = purchasesRepository.findAll();
-                    response = gson.toJson(purchasesList);
-                }
-            } else if ("POST".equals(method)) {
-                Purchases purchases = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Purchases.class);
-                purchasesRepository.save(purchases);
-                response = "Purchases saved";
-            } else if ("PUT".equals(method)) {
-                Purchases purchases = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Purchases.class);
-                purchasesRepository.update(purchases);
-                response = "Purchases updated";
-            } else if ("DELETE".equals(method)) {
-                int id = Integer.parseInt(getQueryParam(exchange.getRequestURI().getQuery(), "id"));
-                purchasesRepository.delete(id);
-                response = "Purchases deleted";
-            } else {
-                statusCode = 405;
-                response = "Method not allowed";
+            switch (method) {
+                case "GET":
+                    response = handleGetRequest(exchange);
+                    break;
+                case "POST":
+                    response = handlePostRequest(exchange);
+                    break;
+                case "PUT":
+                    response = handlePutRequest(exchange);
+                    break;
+                case "DELETE":
+                    response = handleDeleteRequest(exchange);
+                    break;
+                default:
+                    statusCode = 405; // Method Not Allowed
+                    response = "Method not allowed";
+                    break;
             }
         } catch (Exception e) {
-            statusCode = 500;
+            statusCode = 500; // Internal Server Error
             response = "Internal Server Error: " + e.getMessage();
         }
 
@@ -65,6 +49,47 @@ public class PurchasesHandler implements HttpHandler {
         OutputStream os = exchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
+    }
+
+    private String handleGetRequest(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getQuery();
+        String response;
+        int statusCode = 200;
+
+        if (query != null && query.contains("id=")) {
+            int id = Integer.parseInt(getQueryParam(query, "id"));
+            Optional<Purchases> purchases = purchasesRepository.findById(id);
+            if (purchases.isPresent()) {
+                response = gson.toJson(purchases.get());
+            } else {
+                statusCode = 404; // Not Found
+                response = "Purchases not found";
+            }
+        } else {
+            List<Purchases> purchasesList = purchasesRepository.findAll();
+            response = gson.toJson(purchasesList);
+        }
+
+        exchange.sendResponseHeaders(statusCode, response.getBytes().length);
+        return response;
+    }
+
+    private String handlePostRequest(HttpExchange exchange) throws IOException {
+        Purchases purchases = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Purchases.class);
+        purchasesRepository.save(purchases);
+        return "Purchases saved";
+    }
+
+    private String handlePutRequest(HttpExchange exchange) throws IOException {
+        Purchases purchases = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Purchases.class);
+        purchasesRepository.update(purchases);
+        return "Purchases updated";
+    }
+
+    private String handleDeleteRequest(HttpExchange exchange) throws IOException {
+        int id = Integer.parseInt(getQueryParam(exchange.getRequestURI().getQuery(), "id"));
+        purchasesRepository.delete(id);
+        return "Purchases deleted";
     }
 
     private String getQueryParam(String query, String param) {
