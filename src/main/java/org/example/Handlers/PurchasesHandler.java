@@ -51,27 +51,28 @@ public class  PurchasesHandler implements HttpHandler {
         os.close();
     }
 
-    private String handleGetRequest(HttpExchange exchange) throws IOException {
+    private String handleGetRequest(HttpExchange exchange) {
         String query = exchange.getRequestURI().getQuery();
-        String response;
-        int statusCode = 200;
-
         if (query != null && query.contains("id=")) {
-            int id = Integer.parseInt(getQueryParam(query, "id"));
-            Optional<Purchases> purchases = purchasesRepository.findById(id);
-            if (purchases.isPresent()) {
-                response = gson.toJson(purchases.get());
-            } else {
-                statusCode = 404; // Not Found
-                response = "Purchases not found";
-            }
+            return getPurchasesById(query);
         } else {
-            List<Purchases> purchasesList = purchasesRepository.findAll();
-            response = gson.toJson(purchasesList);
+            return getAllPurchases();
         }
+    }
 
-        exchange.sendResponseHeaders(statusCode, response.getBytes().length);
-        return response;
+    private String getPurchasesById(String query) {
+        int id = Integer.parseInt(getQueryParam(query, "id"));
+        Optional<Purchases> purchases = purchasesRepository.findById(id);
+        if (purchases.isPresent()) {
+            return gson.toJson(purchases.get());
+        } else {
+            return "Purchases not found";
+        }
+    }
+
+    private String getAllPurchases() {
+        List<Purchases> purchasesList = purchasesRepository.findAll();
+        return gson.toJson(purchasesList);
     }
 
     private String handlePostRequest(HttpExchange exchange) throws IOException {

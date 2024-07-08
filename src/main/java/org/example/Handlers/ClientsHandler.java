@@ -53,24 +53,26 @@ public class ClientsHandler implements HttpHandler {
 
     private String handleGetRequest(HttpExchange exchange) {
         String query = exchange.getRequestURI().getQuery();
-        String response;
-        int statusCode = 200;
-
         if (query != null && query.contains("id=")) {
-            int id = Integer.parseInt(getQueryParam(query, "id"));
-            Optional<Clients> client = clientsRepository.findById(id);
-            if (client.isPresent()) {
-                response = gson.toJson(client.get());
-            } else {
-                statusCode = 404; // Not Found
-                response = "Client not found";
-            }
+            return getClientById(query);
         } else {
-            List<Clients> clientsList = clientsRepository.findAll();
-            response = gson.toJson(clientsList);
+            return getAllClients();
         }
+    }
 
-        return response;
+    private String getClientById(String query) {
+        int id = Integer.parseInt(getQueryParam(query, "id"));
+        Optional<Clients> client = clientsRepository.findById(id);
+        if (client.isPresent()) {
+            return gson.toJson(client.get());
+        } else {
+            return "Client not found";
+        }
+    }
+
+    private String getAllClients() {
+        List<Clients> clientsList = clientsRepository.findAll();
+        return gson.toJson(clientsList);
     }
 
     private String handlePostRequest(HttpExchange exchange) throws IOException {

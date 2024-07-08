@@ -54,24 +54,26 @@ public class ProductsHandler implements HttpHandler {
 
     private String handleGetRequest(HttpExchange exchange) {
         String query = exchange.getRequestURI().getQuery();
-        String response;
-        int statusCode = 200;
-
         if (query != null && query.contains("id=")) {
-            int id = Integer.parseInt(getQueryParam(query, "id"));
-            Optional<Products> products = productsRepository.findById(id);
-            if (products.isPresent()) {
-                response = gson.toJson(products.get());
-            } else {
-                statusCode = 404; // Not Found
-                response = "Product not found";
-            }
+            return getProductById(query);
         } else {
-            List<Products> productsList = productsRepository.findAll();
-            response = gson.toJson(productsList);
+            return getAllProducts();
         }
+    }
 
-        return response;
+    private String getProductById(String query) {
+        int id = Integer.parseInt(getQueryParam(query, "id"));
+        Optional<Products> products = productsRepository.findById(id);
+        if (products.isPresent()) {
+            return gson.toJson(products.get());
+        } else {
+            return "Product not found";
+        }
+    }
+
+    private String getAllProducts() {
+        List<Products> productsList = productsRepository.findAll();
+        return gson.toJson(productsList);
     }
 
     private String handlePostRequest(HttpExchange exchange) throws IOException {

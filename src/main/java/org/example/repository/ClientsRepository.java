@@ -32,7 +32,7 @@ public class ClientsRepository {
         return Optional.empty();
     }
 
-    public List<Clients> findAll(){
+    public static List<Clients> findAll(){
         List<Clients> clientsList = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM clients");
